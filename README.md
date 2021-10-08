@@ -1,9 +1,11 @@
 # Formal Languages
+
 ## Prerequisites
 
 - `cmake`
 - `graphviz`
-- `clang` or `gcc`
+- `clang` or `gcc` C++20
+
 ## Build
 
 ```shell script
@@ -14,3 +16,16 @@ $ cmake ..
 $ make -j
 ```
 
+## Run
+
+### Main
+
+```shell
+$ ./eNFAtoDFA
+```
+
+### Tests
+
+```shell
+$ ./runUnitTests
+```

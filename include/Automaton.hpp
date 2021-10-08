@@ -3,6 +3,8 @@
 #include <set>
 #include <map>
 #include <queue>
+#include <ostream>
+#include <iostream>
 
 namespace formal {
 
@@ -20,20 +22,21 @@ class Automaton {
   int start;
   TransitionsType transition;
   std::set<int> term;
+
  public:
   Automaton(size_t statesCnt, int start, const std::vector<Edge> &edges, const std::vector<int> &term)
       : statesCnt(statesCnt), start(start), term(term.begin(), term.end()) {
-    for (const auto&[from, to, c]: edges) {
-      transition[{from, c}].insert(to);
+    for (const auto&[from, to, ch]: edges) {
+      transition[{from, ch}].insert(to);
     }
   }
 
  private:
-  void dfs(std::vector<bool> &used, int v) {
+  void findClosure(std::vector<bool> &used, int v) {
     used[v] = true;
     for (const auto &to: transition[{v, EPS}]) {
       if (used[to]) continue;
-      dfs(used, to);
+      findClosure(used, to);
     }
   }
 
@@ -41,7 +44,7 @@ class Automaton {
     std::vector<bool> used;
     for (int i = 0; i < statesCnt; i++) {
       used.assign(statesCnt, false);
-      dfs(used, i);
+      findClosure(used, i);
       for (int to = 0; to < statesCnt; ++to) {
         if (i == to) continue;
         if (used[to]) transition[{i, EPS}].insert(to);
@@ -64,8 +67,8 @@ class Automaton {
   void addEpsTrans() {
     for (int i = 0; i < statesCnt; i++)
       for (int to: transition[{i, EPS}])
-        for (char c = 'a'; c <= 'z'; c++)
-          transition[{i, c}].insert(transition[{to, c}].begin(), transition[{to, c}].end());
+        for (char ch = 'a'; ch <= 'z'; ch++)
+          transition[{i, ch}].insert(transition[{to, ch}].begin(), transition[{to, ch}].end());
   }
 
   void deleteEps() {
@@ -94,36 +97,48 @@ class Automaton {
     TransitionsType dfaTrans;
     std::set<int> newStates;
     std::set<int> newTerms;
-    std::queue<std::set<int>> p;
-    p.push({start});
+    std::queue<std::set<int>> statesQueue;
+
+    statesQueue.push({start});
     newStates.insert(getIndex({start}));
-    while (!p.empty()) {
-      std::set<int> curState = p.front();
-      int cur = getIndex(curState);
-      for (const auto &v: curState) {
-        if (term.contains(v)) newTerms.insert(cur);
-      }
-      p.pop();
+    while (!statesQueue.empty()) {
+      std::set<int> curState = statesQueue.front();
+      statesQueue.pop();
+
       for (char c = 'a'; c <= 'z'; c++) {
         std::set<int> newState;
         for (const auto &v: curState) {
           newState.insert(transition[{v, c}].begin(), transition[{v, c}].end());
         }
+
         // devil state
-        if (!newState.empty())
-          dfaTrans[{cur, c}] = {getIndex(newState)};
+        if (newState.empty()) {
+          continue;
+        }
+
+        dfaTrans[{getIndex(curState), c}] = {getIndex(newState)};
         if (!newStates.contains(getIndex(newState))) {
-          p.push(newState);
+          statesQueue.push(newState);
           newStates.insert(getIndex(newState));
         }
       }
+
+      for (const auto &v: curState) {
+        if (term.contains(v)) newTerms.insert(getIndex(curState));
+      }
     }
+
     start = getIndex({start});
     statesCnt = newStates.size();
     term = std::move(newTerms);
     transition = std::move(dfaTrans);
   }
 
+
+  void eNFAtoDFA() {
+    eNFAToNFA();
+    NFAToDFA();
+  }
   void dump(std::ostream &out) {
     out << "digraph finite_state_machine {\n"
            "rankdir=LR;\n"
@@ -139,16 +154,39 @@ class Automaton {
     for (const auto &[key, toSet] : transition) {
       for (const auto &to : toSet) {
         int from = key.first;
-        char c = key.second;
-        out << from << "->" << to << " [label = \"" << c << "\"];\n";
+        char ch = key.second;
+        out << from << "->" << to << " [label = \"" << ch << "\"];\n";
       }
     }
     out << "}";
   }
 
+  void dumpText(std::ostream &out) {
+    out << term.size();
+    out << '\n';
+    for (int v: term) {
+      out << v << ' ';
+    }
+    out << '\n';
+    out << start << '\n';
+    out << statesCnt << '\n';
+    size_t edgeCnt = 0;
+    for (const auto &[key, toSet] : transition) {
+      edgeCnt += toSet.size();
+    }
+    out << edgeCnt << '\n';
+    for (const auto &[key, toSet] : transition) {
+      for (const auto &to : toSet) {
+        int from = key.first;
+        char ch = key.second;
+        out << from << " " << to << " " << ch << '\n';
+      }
+    }
+  }
+
 };
 
-Automaton readAutomaton(std::istream &in = std::cin, std::ostream &out = std::cout) {
+inline Automaton readAutomaton(std::istream &in = std::cin, std::ostream &out = std::cout) {
   size_t nStates;
   out << "Enter number of states: ";
   in >> nStates;
@@ -179,4 +217,4 @@ Automaton readAutomaton(std::istream &in = std::cin, std::ostream &out = std::co
   }
   return Automaton(nStates, start, edges, term);
 }
-}
+} // namespace formal

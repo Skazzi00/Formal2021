@@ -3,11 +3,11 @@
 #include "Automaton.hpp"
 
 int main() {
-  std::ifstream in("../example1.in");
-  formal::Automaton automaton = formal::readAutomaton(in);
+  formal::Automaton automaton = formal::readAutomaton(std::cin);
+
+  automaton.eNFAtoDFA();
+
   std::ofstream out("out.gv");
-  automaton.eNFAToNFA();
-  automaton.NFAToDFA();
   automaton.dump(out);
   return 0;
 }
