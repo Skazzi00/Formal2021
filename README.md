@@ -1,5 +1,6 @@
 # Formal Languages
-
+## Content
+- eNFA -> NFA -> DFA
 ## Prerequisites
 
 - `cmake`
