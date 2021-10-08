@@ -11,16 +11,16 @@ void checkEqual(std::istream &os1, std::istream &os2) {
   os2 >> termCnt2;
   ASSERT_EQ(termCnt1, termCnt2);
   for (size_t i = 0; i < termCnt1; i++) {
-    int v1, v2;
-    os1 >> v1;
-    os2 >> v2;
-    ASSERT_EQ(v1, v2);
+    int term1, term2;
+    os1 >> term1;
+    os2 >> term2;
+    ASSERT_EQ(term1, term2);
   }
 
-  int s1, s2;
-  os1 >> s1;
-  os2 >> s2;
-  ASSERT_EQ(s1, s2);
+  int start1, start2;
+  os1 >> start1;
+  os2 >> start2;
+  ASSERT_EQ(start1, start2);
 
   size_t statesCnt1, statesCnt2;
   os1 >> statesCnt1;

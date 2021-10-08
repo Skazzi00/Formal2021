@@ -134,11 +134,11 @@ class Automaton {
     transition = std::move(dfaTrans);
   }
 
-
   void eNFAtoDFA() {
     eNFAToNFA();
     NFAToDFA();
   }
+
   void dump(std::ostream &out) {
     out << "digraph finite_state_machine {\n"
            "rankdir=LR;\n"
