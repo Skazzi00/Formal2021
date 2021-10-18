@@ -1,10 +1,10 @@
 #pragma once
-#include <vector>
-#include <set>
-#include <map>
-#include <queue>
-#include <ostream>
 #include <iostream>
+#include <map>
+#include <ostream>
+#include <queue>
+#include <set>
+#include <vector>
 
 namespace formal {
 
@@ -24,9 +24,10 @@ class Automaton {
   std::set<int> term;
 
  public:
-  Automaton(size_t statesCnt, int start, const std::vector<Edge> &edges, const std::vector<int> &term)
+  Automaton(size_t statesCnt, int start, const std::vector<Edge> &edges,
+            const std::vector<int> &term)
       : statesCnt(statesCnt), start(start), term(term.begin(), term.end()) {
-    for (const auto&[from, to, ch]: edges) {
+    for (const auto &[from, to, ch] : edges) {
       transition[{from, ch}].insert(to);
     }
   }
@@ -34,7 +35,7 @@ class Automaton {
  private:
   void findClosure(std::vector<bool> &used, int v) {
     used[v] = true;
-    for (const auto &to: transition[{v, EPS}]) {
+    for (const auto &to : transition[{v, EPS}]) {
       if (used[to]) continue;
       findClosure(used, to);
     }
@@ -55,7 +56,7 @@ class Automaton {
   void addEpsTerm() {
     for (int i = 0; i < statesCnt; i++) {
       if (term.contains(i)) continue;
-      for (int to: transition[{i, EPS}]) {
+      for (int to : transition[{i, EPS}]) {
         if (term.contains(to)) {
           term.insert(i);
           break;
@@ -66,14 +67,14 @@ class Automaton {
 
   void addEpsTrans() {
     for (int i = 0; i < statesCnt; i++)
-      for (int to: transition[{i, EPS}])
+      for (int to : transition[{i, EPS}])
         for (char ch = 'a'; ch <= 'z'; ch++)
-          transition[{i, ch}].insert(transition[{to, ch}].begin(), transition[{to, ch}].end());
+          transition[{i, ch}].insert(transition[{to, ch}].begin(),
+                                     transition[{to, ch}].end());
   }
 
   void deleteEps() {
-    for (int i = 0; i < statesCnt; i++)
-      transition.erase({i, EPS});
+    for (int i = 0; i < statesCnt; i++) transition.erase({i, EPS});
   }
 
  public:
@@ -107,7 +108,7 @@ class Automaton {
 
       for (char c = 'a'; c <= 'z'; c++) {
         std::set<int> newState;
-        for (const auto &v: curState) {
+        for (const auto &v : curState) {
           newState.insert(transition[{v, c}].begin(), transition[{v, c}].end());
         }
 
@@ -123,7 +124,7 @@ class Automaton {
         }
       }
 
-      for (const auto &v: curState) {
+      for (const auto &v : curState) {
         if (term.contains(v)) newTerms.insert(getIndex(curState));
       }
     }
@@ -139,13 +140,27 @@ class Automaton {
     NFAToDFA();
   }
 
+  int prefixEqual(const std::string &str) {
+    int curState = start;
+    int ans = 0;
+    for (int i = 0; i < str.size(); i++) {
+      if (!transition.contains({curState, str[i]})) return ans;
+
+      curState = *transition[{curState, str[i]}].begin();
+
+      if (term.contains(curState)) ans = i + 1;
+    }
+    
+    return ans;
+  }
+
   void dump(std::ostream &out) {
     out << "digraph finite_state_machine {\n"
            "rankdir=LR;\n"
            "size=\"8,5\"\n"
            "n0 [label= \"\", shape=none,height=.0,width=.0]\n";
     out << "node [shape = doublecircle]; ";
-    for (int v: term) {
+    for (int v : term) {
       out << v << ' ';
     }
     out << ";\n";
@@ -164,7 +179,7 @@ class Automaton {
   void dumpText(std::ostream &out) {
     out << term.size();
     out << '\n';
-    for (int v: term) {
+    for (int v : term) {
       out << v << ' ';
     }
     out << '\n';
@@ -183,20 +198,25 @@ class Automaton {
       }
     }
   }
-
 };
 
-inline Automaton readAutomaton(std::istream &in = std::cin, std::ostream &out = std::cout) {
+inline Automaton readAutomaton(std::istream &in = std::cin,
+                               std::ostream &out = std::cout) {
   size_t nStates;
   out << "Enter number of states: ";
+
   in >> nStates;
   int start;
+
   out << "Enter start state: ";
   in >> start;
+
   size_t nEdges;
   out << "Enter number of transitions: ";
+
   in >> nEdges;
   out << "Enter edges (<from> <to> <a..z|$>):\n";
+
   std::vector<Edge> edges;
   edges.reserve(nEdges);
   for (size_t i = 0; i < nEdges; i++) {
@@ -205,16 +225,19 @@ inline Automaton readAutomaton(std::istream &in = std::cin, std::ostream &out = 
     in >> from >> to >> ch;
     edges.push_back({from, to, ch});
   }
+
   std::vector<int> term;
   size_t nTerm;
   out << "Enter number of term states: ";
   in >> nTerm;
+
   out << "Enter term states: ";
   for (size_t i = 0; i < nTerm; i++) {
     int t;
     in >> t;
     term.push_back(t);
   }
+
   return Automaton(nStates, start, edges, term);
 }
-} // namespace formal
+}  // namespace formal
