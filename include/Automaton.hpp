@@ -33,6 +33,96 @@ class Automaton {
   }
 
  private:
+  std::pair<std::set<int>, std::set<int>> split(const std::set<int> &r, const std::set<int> &c, char a) {
+    std::pair<std::set<int>, std::set<int>> res;
+    for (int st : r) {
+      if (c.contains(*transition[{st, a}].begin())) {
+        res.first.insert(st);
+      } else {
+        res.second.insert(st);
+      }
+    }
+    return res;
+  }
+
+ public:
+  void minimizeDFA() {
+    std::set<std::set<int>> p;
+    p.insert(term);
+    std::set<int> nonTerm;
+    for (int i = 0; i < statesCnt; i++) {
+      if (!term.contains(i)) nonTerm.insert(i);
+    }
+    p.insert(nonTerm);
+
+    std::queue<std::pair<std::set<int>, char>> s;
+    for (char c = 'a'; c <= 'z'; c++) {
+      s.push({term, c});
+      s.push({nonTerm, c});
+    }
+    while (!s.empty()) {
+      auto[C, a] = s.front();
+      s.pop();
+      for (auto r = p.begin(); r != p.end();) {
+        auto[r1, r2] = split(*r, C, a);
+        if (!r1.empty() && !r2.empty()) {
+          auto rCopy = r++;
+          p.erase(rCopy);
+          p.insert(r1);
+          p.insert(r2);
+          for (char c = 'a'; c <= 'z'; c++) {
+            s.push({r1, c});
+            s.push({r2, c});
+          }
+        }
+      }
+    }
+
+    std::map<int, int> clazz_id;
+    int index = 0;
+    for (const auto &clazz : p) {
+      for (int st : clazz) {
+        clazz_id[st] = index;
+      }
+      index++;
+    }
+    TransitionsType transition_new;
+    std::set<int> term_new;
+    index = 0;
+    for (const auto &clazz : p) {
+      for (char c = 'a'; c <= 'z'; c++) {
+        transition_new[{index, c}] = {clazz_id[*transition[{*clazz.begin(), c}].begin()]};
+      }
+      if (term.contains(*clazz.begin())) {
+        term_new.insert(index);
+      }
+      if (clazz.contains(start)){
+        start = index;
+      }
+      index++;
+    }
+    statesCnt = index;
+    term = std::move(term_new);
+    transition = std::move(transition_new);
+  }
+
+  void fullDfa() {
+    bool devil = false;
+    for (int state = 0; state < statesCnt; state++) {
+      for (char c = 'a'; c <= 'z'; c++) {
+        if (transition[{state, c}].empty()) {
+          devil = true;
+          transition[{state, c}].insert(statesCnt);
+        }
+      }
+    }
+    if (devil) {
+      for (char c = 'a'; c <= 'z'; c++) transition[{statesCnt, c}].insert(statesCnt);
+      statesCnt++;
+    }
+  }
+
+ private:
   void findClosure(std::vector<bool> &used, int v) {
     used[v] = true;
     for (const auto &to : transition[{v, EPS}]) {
@@ -150,7 +240,7 @@ class Automaton {
 
       if (term.contains(curState)) ans = i + 1;
     }
-    
+
     return ans;
   }
 
