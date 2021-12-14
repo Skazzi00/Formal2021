@@ -2,6 +2,7 @@ import unittest
 from functools import lru_cache
 from typing import Set, Dict, FrozenSet, Tuple, Callable, Union
 from common_lr import *
+from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
