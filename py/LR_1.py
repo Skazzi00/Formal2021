@@ -29,9 +29,13 @@ def is_eps(nonterm: str, grammar: FrozenSet[Rule]) -> bool:
     for rule in grammar:
         if rule.lhs != nonterm:
             continue
+        skip = False
         for c in terminals:
             if c in rule.rhs:
-                continue
+                skip = True
+                break
+        if skip:
+            continue
         flag = True
         for N in rule.rhs:
             flag &= is_eps(N, grammar)
