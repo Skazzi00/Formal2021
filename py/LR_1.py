@@ -1,9 +1,6 @@
 import unittest
-from dataclasses import dataclass
-from enum import Enum
 from functools import lru_cache
-from string import ascii_lowercase
-from typing import List, Set, Dict, FrozenSet, Tuple, Callable, Union
+from typing import Set, Dict, FrozenSet, Tuple, Callable, Union
 from common_lr import *
 
 

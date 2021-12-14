@@ -1,5 +1,4 @@
 import unittest
-from enum import Enum
 from typing import Set, Dict, FrozenSet, Tuple, Callable, Union
 from common_lr import *
 from dataclasses import dataclass
