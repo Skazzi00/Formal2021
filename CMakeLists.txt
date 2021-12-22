@@ -8,7 +8,7 @@ set(COMMON_INCLUDES ${PROJECT_SOURCE_DIR}/include)
 include_directories(${COMMON_INCLUDES})
 
 SET(GCC_COVERAGE_COMPILE_FLAGS "-fprofile-arcs -ftest-coverage")
-SET(GCC_COVERAGE_LINK_FLAGS    "-lgcov")
+# SET(GCC_COVERAGE_LINK_FLAGS    "-lgcov")
 
 SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
 SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}")
@@ -26,3 +26,4 @@ add_test(NAME runUnitTests COMMAND runUnitTests)
 
 add_executable(eNFAtoDFA src/eNFAtoDFA.cpp)
 add_executable(hw5 src/hw5.cpp)
+
